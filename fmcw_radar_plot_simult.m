@@ -64,6 +64,21 @@ while 1
         end
         n=n+1;
     end
+
+    disp('MS Clutter rej')
+    % MS clutter rejection
+    clutter_rej=1;
+    if clutter_rej
+        [mx_N, mx_M] = size(matrix);
+
+        for i=[1:mx_M]
+            col=matrix(:,i);
+            col_mean = mean(col);
+            matrix(:,i)=col-col_mean;
+        end
+    end
+
+    disp('MTI')
     
     % MTI
     mti=2;
@@ -88,29 +103,17 @@ while 1
         end
     end
     
-    disp('MS Clutter rej')
-    % MS clutter rejection
-    clutter_rej=1;
-    if clutter_rej
-        [mx_N, mx_M] = size(matrix);
-
-        for i=[1:mx_M]
-            col=matrix(:,i);
-            col_mean = mean(col);
-            matrix(:,i)=col-col_mean;
-        end
-    end
-    
     % Normalization
     disp('Normalization')
     matrix_fft = abs(matrix);
     matrix_max_db = mag2db(max(max(matrix_fft)));
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
-    %disp('MTI')
+    
     
     M=50;
     T_window=50/Tchirp;
-				%disp('Displaying')
+    
+    disp('Displaying')
 
     % Time window
 
