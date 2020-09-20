@@ -20,7 +20,7 @@ c=299792458;
 deltaf = 2.495e9-2.408e9;
 deltaR = c/(2*deltaf);
 %Rmax = alpha*N*deltaR/2;
-R_vec = [1:N/2]*deltaR;
+R_vec = [1:N/2]*deltaR/alpha;
 
 Time_Max = 60;
 time_vec = [];
