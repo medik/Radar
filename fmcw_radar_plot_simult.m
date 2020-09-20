@@ -87,9 +87,11 @@ while 1
 	% We have already processed Tchirp, move ahead of time. 
         n = n+N-1;
 
-         while n <= length(sig) && sync(n) > 0
-             n=n+1;
-         end
+	%% If the next sample is still in the same Tchirp, move on
+	%% until the next sample is in the downchirp
+        while n+1 <= length(sig) && sync(n+1) > 0
+          n=n+1;
+        end
 
       end
         n=n+1;
