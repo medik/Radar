@@ -175,20 +175,21 @@ while 1
     else
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
     end
-
+    colorbar
+    
     figure(2)
     clf
     plot(time_vec, target_range)
 
     figure(3)
     clf
-    del_x = diff(target_range);
+    del_x = diff(target_range');
     del_t = diff(time_vec);
     vel = del_x./del_t;
-    plot(time_vec, vel)
+    plot(time_vec(1:end-1, vel)
     
     toc
-    colorbar
+
  end
 
 
