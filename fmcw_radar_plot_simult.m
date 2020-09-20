@@ -157,8 +157,6 @@ while 1
     end
     toc
     colorbar
-    
-    time_now=time_now+1;
 end
 
 
