@@ -96,10 +96,11 @@ while 1
     
     tic
     disp('MS Clutter rej')
-    % MS clutter rejection
+    
+    %% MS clutter rejection
     clutter_rej=1;
-    if clutter_rej
-        [mx_N, mx_M] = size(matrix);
+    if clutter_rej && length(mean_vec) > 0
+      [mx_N, mx_M] = size(matrix);
 
         for i=[1:mx_M]
             col=matrix(:,i);
@@ -157,6 +158,7 @@ while 1
     end
     toc
     colorbar
-end
+
+ end
 
 
