@@ -27,11 +27,12 @@ time_vec = [0:Tchirp:Time_Max];
 time_now=0;
 
 matrix = zeros(length(time_vec), alpha*N);
-pause(5);
+disp('Recording')
+record(recorder1);
+pause(1);
 while 1
     tic
-    disp('Recording')
-    recordblocking(recorder1, Td);
+    disp('Retrieving data')
     y = getaudiodata(recorder1);
 
     
