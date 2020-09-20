@@ -31,6 +31,7 @@ n_time = 0;
 % matrix = zeros(length(time_vec), alpha*N);
 matrix = [];
 mean_vec = [];
+target_range = [];
 
 disp('Recording')
 record(recorder1);
@@ -54,7 +55,8 @@ while 1
     % Digitize the sync
     sync = -y(:,2) >= 0.1; 
 
-    % Finding the upchirp (=1)
+    %% Finding the upchirp (=1)
+    mx_temp=[];
     n=1;
     while n <= length(sync)      
       if sync(n)
@@ -70,16 +72,21 @@ while 1
 
 	% Take an FFT of the time domain signal (with length Tchirp)
         temp_fft = fft(temp, alpha*N);
+	temp_fft_abs = abs(temp_fft);
 
 	%% Extend the current matrix
-	matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
+	mx_temp = [mx_temp; temp_fft']; % temp_fft is a column vector, transpose to make it a row
 
 	%% Extend the time vector
 	time_vec = [time_vec (n+n_time)/fs];
 
+	%% Assume that the target is at the maxima, save the range value
+	[~, index] = max(temp_fft_abs);
+	target_range = [target_range; R_vec(index)];
+
 	%% Update mean vector
 	if time_step == 1
-	  mean_vec=abs(temp_fft);
+	  mean_vec=temp_fft_abs;
 	else
 	  mean_vec=(mean_vec+abs(temp_fft))/time_step;
 	end
@@ -97,6 +104,7 @@ while 1
         n=n+1;
     end
     n_time = n_time + n;
+    matrix=[matrix; mx_temp];
     toc
 
     [P,Q] = size(matrix);
@@ -158,15 +166,20 @@ while 1
     tic
     disp('Displaying')
 
-    % Time window
+    %% Time window
+
+    figure(1)
     if T_window > length(time_vec)
       imagesc(R_vec(1:M), time_vec(end-T_window:end), matrix_fft_db(end-T_window:end,1:M), [-50 0]);
     else
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
     end
+
+    figure(2)
+    plot(time_vec, target_range)
+    
     toc
     colorbar
-
  end
 
 
