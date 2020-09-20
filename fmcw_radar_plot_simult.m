@@ -25,9 +25,10 @@ R_vec = [1:N/2]*deltaR;
 Time_Max = 60;
 time_vec = [0:Tchirp:Time_Max];
 
-time_now=0;
+time_step=0;
 
 matrix = zeros(length(time_vec), alpha*N);
+mean_vec = [];
 
 disp('Recording')
 record(recorder1);
@@ -53,6 +54,8 @@ while 1
     n=1;
     while n <= length(sync)
       if sync(n)
+	time_step = time_step+1;
+	
 	% Check if the length is exactly Tchirp, add padding otherwise
         if n+N-1 <= length(sig)
           temp = sig(n:n+N-1);
@@ -65,13 +68,19 @@ while 1
         temp_fft = fft(temp, alpha*N);
 
 	% Making sure that it adds more rows when the matrix is filled
-        if time_now <= length(time_vec)
-          matrix(time_now, :) = temp_fft;
-          time_now = time_now+1;
+        if time_step <= length(time_vec)
+          matrix(time_step, :) = temp_fft;
         else
           matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
           time_vec = [time_vec; time_vec(end)+Tchirp];
         end
+
+	%% Update mean vector
+	if time_step == 1
+	  mean_vec=temp_fft;
+	else
+	  mean_vec=(mean_vec+temp_fft)/time_step;
+	end
 
 	% We have already processed Tchirp, move ahead of time. 
         n = n+N-1;
@@ -79,6 +88,9 @@ while 1
         n=n+1;
     end
     toc
+
+    [P,Q] = size(matrix);
+    matrix_clut_rej=zeros(P,Q);
     
     tic
     disp('MS Clutter rej')
@@ -89,7 +101,7 @@ while 1
 
         for i=[1:mx_M]
             col=matrix(:,i);
-            col_mean = mean(col);
+            col_mean = mean_vec(i);
             matrix(:,i)=col-col_mean;
         end
     end
@@ -141,9 +153,7 @@ while 1
     else
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
     end
-    toc
-    
-    time_now=time_now+1;
+    tocS    
 end
 
 
