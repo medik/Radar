@@ -3,7 +3,7 @@ disp('Radar on')
 fs=44100;
 Td=50e-3; % dwell time
 
-recorder1 = audiorecorder(fs,16,2,0);
+recorder1 = audiorecorder(fs,16,2,6);
 
 Tchirp=20e-3;
 Nchirp=Tchirp*fs;
@@ -31,7 +31,7 @@ pause(5);
 while 1
     tic
     disp('Recording')
-    record(recorder1, Td);
+    recordblocking(recorder1, Td);
     y = getaudiodata(recorder1);
     disp('Processing data')
     sig = -y(:,1);
@@ -107,7 +107,7 @@ while 1
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
     %disp('MTI')
     
-    M=50;
+    M=50/Tchirp;
     %disp('Displaying')
     imagesc(R_vec(1:M), time_vec(end-50:end), temp_MTI(end-50:end,1:M), [-50 0]);
     time_now=time_now+1;
