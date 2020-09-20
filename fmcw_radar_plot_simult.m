@@ -8,7 +8,8 @@ recorder1 = audiorecorder(fs,16,2,6);
 Tchirp=20e-3;
 Nchirp=Tchirp*fs;
 
-N=Td*fs;
+% Number of column of the matrix is equal to the chirp time for FMCW
+N=Tchirp*fs;
 alpha=4;
 f_max = fs/2;
 deltaf = f_max/N;
@@ -33,9 +34,10 @@ pause(1);
 while 1
     tic
     disp('Retrieving data')
+    pause(Td);
     y = getaudiodata(recorder1);
-
-    
+    toc
+    tic
     disp('Processing data')
     sig = -y(:,1);
     sync = -y(:,2);
@@ -65,7 +67,9 @@ while 1
         end
         n=n+1;
     end
-
+    toc
+    
+    tic
     disp('MS Clutter rej')
     % MS clutter rejection
     clutter_rej=1;
@@ -78,9 +82,10 @@ while 1
             matrix(:,i)=col-col_mean;
         end
     end
+    toc
 
-    disp('MTI')
-    
+    tic
+    disp('MTI')  
     % MTI
     mti=2;
     [P,Q] = size(matrix);
@@ -103,17 +108,21 @@ while 1
             k = k + 1;
         end
     end
-    
+    toc
+
+
+    tic
     % Normalization
     disp('Normalization')
     matrix_fft = abs(matrix);
     matrix_max_db = mag2db(max(max(matrix_fft)));
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
-    
+    toc
     
     M=50;
     T_window=50/Tchirp;
-    
+
+    tic
     disp('Displaying')
 
     % Time window
@@ -123,7 +132,7 @@ while 1
     else
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
     end
-
+    toc
     
     time_now=time_now+1;
     toc
