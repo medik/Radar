@@ -23,16 +23,18 @@ deltaR = c/(2*deltaf);
 R_vec = [1:N/2]*deltaR;
 
 Time_Max = 60;
-time_vec = [0:1/fs:Time_Max];
+time_vec = [];
 
 time_step=0;
+n_time = 0;
 
-matrix = zeros(length(time_vec), alpha*N);
+% matrix = zeros(length(time_vec), alpha*N);
+matrix = [];
 mean_vec = [];
 
 disp('Recording')
 record(recorder1);
-pause(1);
+pause(30);
 
 while 1
     tic
@@ -54,7 +56,7 @@ while 1
 
     % Finding the upchirp (=1)
     n=1;
-    while n <= length(sync)
+    while n <= length(sync)      
       if sync(n)
 	time_step = time_step+1;
 	
@@ -69,13 +71,11 @@ while 1
 	% Take an FFT of the time domain signal (with length Tchirp)
         temp_fft = fft(temp, alpha*N);
 
-	% Making sure that it adds more rows when the matrix is filled
-        if time_step <= length(time_vec)
-          matrix(time_step, :) = temp_fft;
-        else
-          matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
-          time_vec = [time_vec time_vec(end)+1/fs];
-        end
+	%% Extend the current matrix
+	matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
+
+	%% Extend the time vector
+	time_vec = [time_vec (n+n_time)/fs];
 
 	%% Update mean vector
 	if time_step == 1
@@ -96,6 +96,7 @@ while 1
       end
         n=n+1;
     end
+    n_time = n_time + n;
     toc
 
     [P,Q] = size(matrix);
