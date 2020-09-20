@@ -169,6 +169,7 @@ while 1
     %% Time window
 
     figure(1)
+    clf
     if T_window < length(time_vec)
       imagesc(R_vec(1:M), time_vec(end-T_window:end), matrix_fft_db(end-T_window:end,1:M), [-50 0]);
     else
@@ -176,7 +177,15 @@ while 1
     end
 
     figure(2)
+    clf
     plot(time_vec, target_range)
+
+    figure(3)
+    clf
+    del_x = diff(target_range);
+    del_t = diff(time_vec);
+    vel = del_x./del_t;
+    plot(time_vec, vel)
     
     toc
     colorbar
