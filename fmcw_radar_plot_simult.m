@@ -1,7 +1,7 @@
 clear
 disp('Radar on')
 fs=44100;
-Td=1; % dwell time
+Td=10; % dwell time
 
 recorder1 = audiorecorder(fs,16,2,6);
 
@@ -23,7 +23,7 @@ deltaR = c/(2*deltaf);
 R_vec = [1:N/2]*deltaR;
 
 Time_Max = 60;
-time_vec = [0:Tchirp:Time_Max];
+time_vec = [0:1/fs:Time_Max];
 
 time_step=0;
 
@@ -74,18 +74,23 @@ while 1
           matrix(time_step, :) = temp_fft;
         else
           matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
-          time_vec = [time_vec time_vec(end)+Tchirp];
+          time_vec = [time_vec time_vec(end)+1/fs];
         end
 
 	%% Update mean vector
 	if time_step == 1
-	  mean_vec=temp_fft;
+	  mean_vec=abs(temp_fft);
 	else
-	  mean_vec=(mean_vec+temp_fft)/time_step;
+	  mean_vec=(mean_vec+abs(temp_fft))/time_step;
 	end
 
 	% We have already processed Tchirp, move ahead of time. 
         n = n+N-1;
+
+         while n <= length(sig) && sync(n) > 0
+             n=n+1;
+         end
+
       end
         n=n+1;
     end
@@ -139,7 +144,7 @@ while 1
     tic
     % Normalization
     disp('Normalization')
-    matrix_fft = abs(matrix);
+    matrix_fft = abs(temp_MTI);
     matrix_max_db = mag2db(max(max(matrix_fft)));
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
     toc
