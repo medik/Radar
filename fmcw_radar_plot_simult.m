@@ -28,43 +28,54 @@ time_vec = [0:Tchirp:Time_Max];
 time_now=0;
 
 matrix = zeros(length(time_vec), alpha*N);
+
 disp('Recording')
 record(recorder1);
 pause(1);
+
 while 1
     tic
     disp('Retrieving data')
     pause(Td);
     y = getaudiodata(recorder1);
     toc
+    
     tic
     disp('Processing data')
+
+    % Retrieving signal
     sig = -y(:,1);
-    sync = -y(:,2);
 
-    % Finding sync 
+    % Digitize the sync
+    sync = -y(:,2) >= 0.1; 
 
+    % Finding the upchirp (=1)
     n=1;
     while n <= length(sync)
-        if sync(n)
-            if n+N-1 <= length(sig)
-                temp = sig(n:n+N-1);
-            else
-                temp = [sig(n:end)];
-                temp = [temp zeros(1,N-length(temp))];
-            end
-
-            % FFT
-            temp_fft = fft(temp, alpha*N);
-            if time_now <= length(time_vec)
-                matrix(time_now, :) = temp_fft;
-                time_now = time_now+1;
-            else
-                matrix = [matrix; temp_fft];
-                time_vec = [time_vec; time_vec(end)+Tchirp];
-            end    
-            n = n+N-1;
+      if sync(n)
+	% Check if the length is exactly Tchirp, add padding otherwise
+        if n+N-1 <= length(sig)
+          temp = sig(n:n+N-1);
+        else
+          temp = [sig(n:end)];
+          temp = [temp; zeros(N-length(temp),1)];
         end
+
+	% Take an FFT of the time domain signal (with length Tchirp)
+        temp_fft = fft(temp, alpha*N);
+
+	% Making sure that it adds more rows when the matrix is filled
+        if time_now <= length(time_vec)
+          matrix(time_now, :) = temp_fft;
+          time_now = time_now+1;
+        else
+          matrix = [matrix; temp_fft];
+          time_vec = [time_vec; time_vec(end)+Tchirp];
+        end
+
+	% We have already processed Tchirp, move ahead of time. 
+        n = n+N-1;
+      end
         n=n+1;
     end
     toc
@@ -110,7 +121,6 @@ while 1
     end
     toc
 
-
     tic
     % Normalization
     disp('Normalization')
@@ -126,7 +136,6 @@ while 1
     disp('Displaying')
 
     % Time window
-
     if T_window > length(time_vec)
       imagesc(R_vec(1:M), time_vec(end-T_window:end), matrix_fft_db(end-T_window:end,1:M), [-50 0]);
     else
