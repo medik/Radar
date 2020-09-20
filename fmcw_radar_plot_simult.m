@@ -169,7 +169,7 @@ while 1
     %% Time window
 
     figure(1)
-    if T_window > length(time_vec)
+    if T_window < length(time_vec)
       imagesc(R_vec(1:M), time_vec(end-T_window:end), matrix_fft_db(end-T_window:end,1:M), [-50 0]);
     else
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
