@@ -1,7 +1,7 @@
 clear
 disp('Radar on')
 fs=44100;
-Td=50e-3; % dwell time
+Td=1; % dwell time
 
 recorder1 = audiorecorder(fs,16,2,6);
 
@@ -38,6 +38,8 @@ while 1
     disp('Retrieving data')
     pause(Td);
     y = getaudiodata(recorder1);
+    stop(recorder1);
+    record(recorder1);  
     toc
     
     tic
@@ -70,7 +72,7 @@ while 1
           time_now = time_now+1;
         else
           matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
-          time_vec = [time_vec; time_vec(end)+Tchirp];
+          time_vec = [time_vec time_vec(end)+Tchirp];
         end
 
 	% We have already processed Tchirp, move ahead of time. 
@@ -142,6 +144,7 @@ while 1
       imagesc(R_vec(1:M), time_vec(1:end), matrix_fft_db(1:end,1:M), [-50 0]);
     end
     toc
+    colorbar
     
     time_now=time_now+1;
 end
