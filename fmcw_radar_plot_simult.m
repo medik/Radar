@@ -33,14 +33,17 @@ while 1
     disp('Recording')
     recordblocking(recorder1, Td);
     y = getaudiodata(recorder1);
+
+    
     disp('Processing data')
     sig = -y(:,1);
     sync = -y(:,2);
-    
+
+    % Finding sync 
+
     n=1;
     while n <= length(sync)
         if sync(n)
-            %time_vec=[time_vec n/fs];
             if n+N-1 <= length(sig)
                 temp = sig(n:n+N-1);
             else
@@ -48,8 +51,6 @@ while 1
                 temp = [temp zeros(1,N-length(temp))];
             end
 
-            %matrix = [matrix; temp;];
-            
             % FFT
             temp_fft = fft(temp, alpha*N);
             if time_now <= length(time_vec)
@@ -107,9 +108,19 @@ while 1
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
     %disp('MTI')
     
-    M=50/Tchirp;
-    %disp('Displaying')
-    imagesc(R_vec(1:M), time_vec(end-50:end), temp_MTI(end-50:end,1:M), [-50 0]);
+    M=50;
+    T_window=50/Tchirp;
+				%disp('Displaying')
+
+    % Time window
+
+    if T_window > length(time_vec)
+      imagesc(R_vec(1:M), time_vec(end-T_window:end), temp_MTI(end-T_window:end,1:M), [-50 0]);
+    else
+      imagesc(R_vec(1:M), time_vec(1:end), temp_MTI(1:end,1:M), [-50 0]);
+    end
+
+    
     time_now=time_now+1;
     toc
 end
