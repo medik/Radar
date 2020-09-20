@@ -144,7 +144,6 @@ while 1
     toc
     
     time_now=time_now+1;
-    toc
 end
 
 
