@@ -69,7 +69,7 @@ while 1
           matrix(time_now, :) = temp_fft;
           time_now = time_now+1;
         else
-          matrix = [matrix; temp_fft];
+          matrix = [matrix; temp_fft']; % temp_fft is a column vector, transpose to make it a row
           time_vec = [time_vec; time_vec(end)+Tchirp];
         end
 
