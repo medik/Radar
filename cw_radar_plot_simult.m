@@ -9,13 +9,11 @@ f_max = fs/2;
 deltaf = f_max/N;
 c=299792458;
 f=2.43e9; % center frequency
-freq_vec = [0:alpha*N-1]*deltaf;
+freq_vec = [0:N-1]*deltaf/alpha;
 vel_vec = freq_vec * (c/(2*f));
 
 Time_Max = 60;
 time_vec = [0:Td:Time_Max];
-
-
 
 time_now=0;
 
@@ -29,7 +27,7 @@ while 1
     ch1_mean = mean(ch1);
     ch1 = ch1 - abs(ch1_mean);
     
-    % FFT
+    %% FFT
     
     temp_fft = fft(ch1, alpha*N);
     temp_max = mag2db(max(abs(temp_fft)));
