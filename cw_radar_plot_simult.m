@@ -1,59 +1,85 @@
+clear
+%load velocity_test_file.mat
+
+pause(2);
 fs=44100;
-%Td=0.5; % dwell time
-
 recorder1 = audiorecorder(fs,16,2,6);
-
-deltaT = 1/fs;
-N=4410;
-%N=2000;
-Td = N*deltaT;
-
-%N=Td*fs;
-alpha=4;
-f_max = fs/2;
-deltaf = f_max/N;
-c=299792458;
-f=2.43e9; % center frequency
-freq_vec = [0:N-1]*deltaf/alpha;
-vel_vec = freq_vec * (c/(2*f));
-
-Time_Max = 60;
-time_vec = [0:Td:Time_Max];
-
-time_now=0;
-
-matrix = zeros(length(time_vec), alpha*N);
-
-
-max_db=0
+record(recorder1);
 while 1
-    recordblocking(recorder1, Td);
+    pause(10);
     y = getaudiodata(recorder1);
-    
+    stop(recorder1);
+    record(recorder1);
+
     ch1 = -y(:,1);
     ch1_mean = mean(ch1);
     ch1 = ch1 - abs(ch1_mean);
-    
-    %% FFT
-    
-    temp_fft = fft(ch1, alpha*N);
-    temp_max = mag2db(max(abs(temp_fft)));
-    
-    if max_db < temp_max
-        max_db=temp_max;
+
+    % sync
+    ch2 = -y(:,2);
+
+    alpha=4;
+
+    deltaT = 1/fs;
+    N=4410;
+    %N=2000;
+    Tdwell = N*deltaT;
+
+    f_max = fs/2;
+    deltaf = f_max/N;
+    c=299792458;
+    f=2.43e9; % center frequency
+    freq_vec = [0:N-1]*deltaf/alpha;
+    vel_vec = freq_vec * (c/(2*f));
+
+    time_vec = [];
+    matrix = [];
+    matrix_2 = [];
+    tnow=0;
+    max_db=0;
+    %%
+    while ~isempty(ch1)
+        if length(ch1) >= N
+            temp = ch1(1:N)';
+            ch1 = ch1(N+1:end);
+        else
+            temp = ch1(1:end)';
+            temp = [temp zeros(1,N-length(temp))];
+            ch1 = [];
+        end
+
+        temp_fft = fft(temp, alpha*N);
+        temp_max = mag2db(max(abs(temp_fft)));
+
+        if max_db < temp_max
+            max_db=temp_max;
+        end
+
+        temp_fft_db = 10*log10(abs(temp_fft));
+
+
+        matrix = [matrix; temp_fft_db];
+        matrix_2 = [matrix_2; temp;];
+        time_vec = [time_vec tnow];
+        tnow = tnow + Tdwell;
     end
-    
-    matrix(1+mod(time_now,length(time_vec)),:) = temp_fft;
-    
-    figure(8)
+    %%
+
+    temp_mx = [];
+    [b,d] = size(matrix_2);
+    for i = [1:b]
+        row = matrix_2(i,:);
+        temp_mx = [temp_mx; mag2db(abs(fft(row,alpha*N)))];
+    end
+
+
+    %%
+    max_db = max(max(temp_mx));
+    matrix=temp_mx-max_db;
     M=100;
-    imagesc(vel_vec(1:M), time_vec, matrix(:,1:M)-max_db, [-45 0]);
+    imagesc(vel_vec(1:M), time_vec, matrix(:,1:M), [-45 0]);
     colorbar
     xlabel('Velocity [m/s]')
     ylabel('Time [s]')
     title('3N padding')
-    
-    time_now=time_now+1;
 end
-
-
