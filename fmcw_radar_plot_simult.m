@@ -139,7 +139,7 @@ try
     [P,Q] = size(matrix);
     [Pp,Qq] = size(matrix_MTI);
     new_entries = P-Pp;
-    matrix_MTI = [matrix_MTI; zeros(new_entries, Qq)];
+    matrix_MTI = [matrix_MTI; zeros(new_entries, Q)];
     
     if mti==2
       %%2-pulse MTI
