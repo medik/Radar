@@ -134,7 +134,13 @@ try
     disp('MTI')  
     %% MTI
     mti=2;
+
+    %% Extend the matrix here for saving computational cost
     [P,Q] = size(matrix);
+    [Pp,Qq] = size(matrix_MTI);
+    new_entries = P-Pp;
+    matrix_MTI = [matrix_MTI; zeros(new_entries, Qq)];
+    
     if mti==2
       %%2-pulse MTI
 
