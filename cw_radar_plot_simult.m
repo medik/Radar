@@ -1,9 +1,14 @@
 fs=44100;
-Td=0.1; % dwell time
+%Td=0.5; % dwell time
 
-recorder1 = audiorecorder(fs,16,2,0);
+recorder1 = audiorecorder(fs,16,2,6);
 
-N=Td*fs;
+deltaT = 1/fs;
+N=4410;
+%N=2000;
+Td = N*deltaT;
+
+%N=Td*fs;
 alpha=4;
 f_max = fs/2;
 deltaf = f_max/N;
@@ -19,6 +24,8 @@ time_now=0;
 
 matrix = zeros(length(time_vec), alpha*N);
 
+
+max_db=0
 while 1
     recordblocking(recorder1, Td);
     y = getaudiodata(recorder1);
@@ -31,11 +38,21 @@ while 1
     
     temp_fft = fft(ch1, alpha*N);
     temp_max = mag2db(max(abs(temp_fft)));
-    temp_fft = mag2db(abs(temp_fft))-temp_max;
+    
+    if max_db < temp_max
+        max_db=temp_max;
+    end
     
     matrix(1+mod(time_now,length(time_vec)),:) = temp_fft;
     
-    imagesc(vel_vec, time_vec, matrix, [-45 0]);
+    figure(8)
+    M=100;
+    imagesc(vel_vec(1:M), time_vec, matrix(:,1:M)-max_db, [-45 0]);
+    colorbar
+    xlabel('Velocity [m/s]')
+    ylabel('Time [s]')
+    title('3N padding')
+    
     time_now=time_now+1;
 end
 
