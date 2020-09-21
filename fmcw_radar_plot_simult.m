@@ -198,7 +198,7 @@ try
     del_x = diff(target_range');
     del_t = diff(time_vec);
     vel = del_x./del_t;
-    plot(time_vec(1:end-1, vel)
+    plot(time_vec(1:end), [0 vel])
 		 
     toc
 
