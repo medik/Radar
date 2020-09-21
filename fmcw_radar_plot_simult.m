@@ -36,8 +36,8 @@ target_range = [];
 disp('Recording')
 record(recorder1);
 pause(30);
-
-while 1
+try
+  while 1
     tic
     disp('Retrieving data')
     pause(Td);
@@ -49,10 +49,10 @@ while 1
     tic
     disp('Processing data')
 
-    % Retrieving signal
+    %% Retrieving signal
     sig = -y(:,1);
 
-    % Digitize the sync
+    %% Digitize the sync
     sync = -y(:,2) >= 0.1; 
 
     %% Finding the upchirp (=1)
@@ -70,7 +70,7 @@ while 1
           temp = [temp; zeros(N-length(temp),1)];
         end
 
-	% Take an FFT of the time domain signal (with length Tchirp)
+	  % Take an FFT of the time domain signal (with length Tchirp)
         temp_fft = fft(temp, alpha*N);
 	temp_fft_abs = abs(temp_fft);
 
@@ -91,7 +91,7 @@ while 1
 	  mean_vec=(mean_vec+abs(temp_fft))/time_step;
 	end
 
-	% We have already processed Tchirp, move ahead of time. 
+	%% We have already processed Tchirp, move ahead of time. 
         n = n+N-1;
 
 	%% If the next sample is still in the same Tchirp, move on
@@ -101,7 +101,7 @@ while 1
         end
 
       end
-        n=n+1;
+      n=n+1;
     end
     n_time = n_time + n;
     matrix=[matrix; mx_temp];
@@ -118,42 +118,42 @@ while 1
     if clutter_rej && length(mean_vec) > 0
       [mx_N, mx_M] = size(matrix);
 
-        for i=[1:mx_M]
-            col=matrix(:,i);
-            col_mean = mean_vec(i);
-            matrix(:,i)=col-col_mean;
-        end
+      for i=[1:mx_M]
+        col=matrix(:,i);
+        col_mean = mean_vec(i);
+        matrix(:,i)=col-col_mean;
+      end
     end
     toc
 
     tic
     disp('MTI')  
-    % MTI
+    %% MTI
     mti=2;
     [P,Q] = size(matrix);
     temp_MTI = zeros(P,Q);
     if mti==2
-        %2-pulse MTI
-        k = 2;
-        temp_MTI(1,:) = matrix(1,:);
-        while k <= P
-            temp_MTI(k,:) = matrix(k,:) - matrix(k-1,:);
-            k = k + 1;
-        end
+      %%2-pulse MTI
+      k = 2;
+      temp_MTI(1,:) = matrix(1,:);
+      while k <= P
+        temp_MTI(k,:) = matrix(k,:) - matrix(k-1,:);
+        k = k + 1;
+      end
     else
-        %3-pulse MTI
-        k = 3;
-        temp_MTI(1,:) = matrix(1,:);
-        temp_MTI(2,:) = matrix(2,:);
-        while k <= P
-            temp_MTI(k,:) = matrix(k,:) - 2*matrix(k-1,:) + matrix(k-2,:);
-            k = k + 1;
-        end
+      %%3-pulse MTI
+      k = 3;
+      temp_MTI(1,:) = matrix(1,:);
+      temp_MTI(2,:) = matrix(2,:);
+      while k <= P
+        temp_MTI(k,:) = matrix(k,:) - 2*matrix(k-1,:) + matrix(k-2,:);
+        k = k + 1;
+      end
     end
     toc
 
     tic
-    % Normalization
+    %% Normalization
     disp('Normalization')
     matrix_fft = abs(temp_MTI);
     matrix_max_db = mag2db(max(max(matrix_fft)));
@@ -187,9 +187,15 @@ while 1
     del_t = diff(time_vec);
     vel = del_x./del_t;
     plot(time_vec(1:end-1, vel)
-    
+		 
     toc
 
- end
+    end
+catch
+  disp('Cleaning up')	   
+  stop(recorder1);
+end
+	       
+	   
 
 
