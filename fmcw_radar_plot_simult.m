@@ -33,6 +33,10 @@ matrix = [];
 mean_vec = [];
 target_range = [];
 
+% For MTI
+k=1;
+matrix_MTI = [];
+
 disp('Recording')
 record(recorder1);
 pause(30);
@@ -62,7 +66,7 @@ try
       if sync(n)
 	time_step = time_step+1;
 	
-	% Check if the length is exactly Tchirp, add padding otherwise
+	%% Check if the length is exactly Tchirp, add padding otherwise
         if n+N-1 <= length(sig)
           temp = sig(n:n+N-1);
         else
@@ -70,7 +74,7 @@ try
           temp = [temp; zeros(N-length(temp),1)];
         end
 
-	  % Take an FFT of the time domain signal (with length Tchirp)
+	%% Take an FFT of the time domain signal (with length Tchirp)
         temp_fft = fft(temp, alpha*N);
 	temp_fft_abs = abs(temp_fft);
 
@@ -131,22 +135,27 @@ try
     %% MTI
     mti=2;
     [P,Q] = size(matrix);
-    temp_MTI = zeros(P,Q);
     if mti==2
       %%2-pulse MTI
-      k = 2;
-      temp_MTI(1,:) = matrix(1,:);
+
+      %% Calculate only the new rows
       while k <= P
-        temp_MTI(k,:) = matrix(k,:) - matrix(k-1,:);
-        k = k + 1;
+	if k == 1
+	  matrix_MTI(1,:) = matrix(1,:);
+	else
+          matrix_MTI(k,:) = matrix(k,:) - matrix(k-1,:);
+	end
+	k = k + 1;
       end
+      
     else
       %%3-pulse MTI
-      k = 3;
-      temp_MTI(1,:) = matrix(1,:);
-      temp_MTI(2,:) = matrix(2,:);
       while k <= P
-        temp_MTI(k,:) = matrix(k,:) - 2*matrix(k-1,:) + matrix(k-2,:);
+	if k == 1 || k == 2
+	  matrix_MTI(k,:) = matrix(k,:);
+	else
+          matrix_MTI(k,:) = matrix(k,:) - 2*matrix(k-1,:) + matrix(k-2,:);
+	end
         k = k + 1;
       end
     end
@@ -155,12 +164,15 @@ try
     tic
     %% Normalization
     disp('Normalization')
-    matrix_fft = abs(temp_MTI);
+    matrix_fft = abs(matrix_MTI);
     matrix_max_db = mag2db(max(max(matrix_fft)));
     matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
     toc
-    
+
+    %% Show only M samples in the range direction
     M=50;
+
+    %% Show only the last T_window samples
     T_window=50/Tchirp;
 
     tic
