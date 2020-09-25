@@ -131,4 +131,43 @@ ylabel('K_x(rad/m)');
 colorbar;
 fig_count = fig_count+ 1;
 
+% Matched filter
+% Rs = 0, already set earlier
+S_matched = S;
+
+% Stolt Interpolation
+kstart = floor(min(Kr) - 20);
+kstop = ceil(max(Kr));
+Ky_e = linspace(kstart,kstop,1024);
+count = 0;
+Ky = [];
+S_st = [];
+for ii = 1:zpad
+    count = count + 1;
+    Ky(count,:) = sqrt(Kr.^2 -Kx(ii)^2);
+    S_st(count,:) = (interp1(Ky(count,:), S_matched(ii,:), Ky_e));
+end
+
+% Replace NaN with 1e-30 in S_st
+% S_st(find(isnan(S_st))) = 1e-30;, matlab does not like find function
+[row, column] = size(S_st);
+for m = 1:row
+    for n = 1:column
+        if isnan(S_st(m,n))
+            S_st(m,n) = 1e-30;
+        end
+    end
+end
+
+% Plot the phase after Stolt interpolation
+figure(fig_count);
+S_image = angle(S_st);
+imagesc(Ky_e, Kx, S_image);
+colormap('default');
+xlabel('K_y(rad/m)');
+ylabel('K_x(rad/m)');
+colorbar;
+fig_count = fig_count + 1;
+
+
 
