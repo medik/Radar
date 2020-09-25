@@ -136,8 +136,8 @@ fig_count = fig_count+ 1;
 S_matched = S;
 
 % Stolt Interpolation
-kstart = floor(min(Kr) - 20);
-kstop = ceil(max(Kr));
+kstart = floor(min(Kr) - 20); % Can be set according to filled area of Ky
+kstop = ceil(max(Kr)); % Can be set according to filled area of Ky
 Ky_e = linspace(kstart,kstop,1024);
 count = 0;
 Ky = [];
@@ -168,6 +168,40 @@ xlabel('K_y(rad/m)');
 ylabel('K_x(rad/m)');
 colorbar;
 fig_count = fig_count + 1;
+
+% Inverse 2D FFT to image domain
+v = ifft2(S_st,(size(S_st,1)*4),(size(S_st,2)*4));
+
+% Plot final image
+bw = c*(kstop-kstart)/(4*pi);
+max_range = (c*size(S_st,2)/(2*bw));
+figure(fig_count);
+S_image = v;
+S_image = fliplr(rot90(S_image));
+cr1 = -25; % depends on the Kx of the Stolt Interpolation
+cr2 = 25; % depends on the Kx of the Stolt Interpolation
+dr1 = 1;
+dr2 = 100;
+
+% Truncate data
+dr_index1 = round((dr1/max_range)*size(S_image,1));
+dr_index2 = round((dr2/max_range)*size(S_image,1));
+cr_index1 = round(((cr1+zpad*delta_x/(2*1))/(zpad*delta_x/1))*size(S_image,2));
+cr_index2 = round(((cr2+zpad*delta_x/(2*1))/(zpad*delta_x/1))*size(S_image,2));
+trunc_image = S_image(dr_index1:dr_index2,cr_index1:cr_index2);
+downrange = linspace(-1*dr1,-1*dr2,size(trunc_image,1));
+crossrange = linspace(cr1, cr2, size(trunc_image, 2));
+for ii = 1:size(trunc_image,2)
+trunc_image(:,ii) = (trunc_image(:,ii)').*(abs(downrange*1)).^(3/2);
+end
+trunc_image= 20*log10(abs(trunc_image));
+imagesc(crossrange, downrange, trunc_image, [max(max(trunc_image))-40, max(max(trunc_image))-0]);
+colormap('default');
+axis equal;
+colorbar;
+
+
+
 
 
 
