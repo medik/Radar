@@ -99,3 +99,5 @@ xlabel('K_r(rad/m)');
 ylabel('SAR Position, Xa(m)');
 colorbar;
 figcount = figcount + 1;
+
+% Wow ok!
