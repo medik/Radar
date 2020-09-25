@@ -67,7 +67,7 @@ lambda = c/fc;
 delta_x = lambda/2;
 L = delta_x*(size(sif,1));
 Xa = linspace(-L/2, L/2, (L/delta_x));
-time = linspace(0, Tsample, size(sif,2));
+time = linspace(0, Ts, size(sif,2));
 Kr = linspace(((4*pi/c)*(fc - BW/2)), ((4*pi/c)*(fc + BW/2)), (size(time,2)));
 
 for j = 1:size(sif,1)
@@ -78,7 +78,7 @@ end
 %Clear N;
 N = size(sif,2);
 H = [];
-for i= 1:N
+for i = 1:N
     H(i) = 0.5 + 0.5*cos(2*pi*(i-N/2)/N);
 end
 
@@ -89,7 +89,7 @@ for i = 1:size(sif,1)
 end
 sif = sif_h;
 
-% Plot the phase of the SAR data matrix before along track FFT
+% Plot the phase before along track FFT
 fig_count = 1;
 figure(fig_count);
 S_image = angle(sif);
@@ -98,6 +98,37 @@ colormap('default');
 xlabel('K_r(rad/m)');
 ylabel('SAR Position, Xa(m)');
 colorbar;
-figcount = figcount + 1;
+fig_count = fig_count + 1;
 
-% Wow ok!
+% Cross range Fourier transform
+zpad = 2048;
+s_zeros = zeros(zpad, size(sif,2));
+for i = 1:size(sif,2)
+    index = round((zpad-size(sif,1))/2);
+    s_zeros(index+1:(index + size(sif,1)),i) = sif(:,i);
+end
+sif = s_zeros;
+S = fftshift(fft(sif, [], 1), 1);
+Kx = linspace((-pi/delta_x), (pi/delta_x), (size(S,1)));
+
+% Plot the magnitude after along track FFT
+figure(fig_count);
+S_image = 20*log10(abs(S));
+imagesc(Kr, Kx, S_image, [max(max(S_image))-40, max(max(S_image))]);
+colormap('default');
+xlabel('K_r(rad/m)');
+ylabel('K_x(rad/m)');
+colorbar;
+fig_count = fig_count+ 1;
+
+%Plot the phase after long track FFT
+figure(fig_count);
+S_image = angle(S);
+imagesc(Kr, Kx, S_image);
+colormap('default');
+xlabel('K_r(rad/m)');
+ylabel('K_x(rad/m)');
+colorbar;
+fig_count = fig_count+ 1;
+
+
