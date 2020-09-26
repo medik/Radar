@@ -5,8 +5,8 @@ clc;
 [y, fs] = audioread('SAR_Test_File.m4a');
 c = 299792458;
 fc = 2.43e9; % center frequency
-f_start = 2.408e9;
-f_stop = 2.495e9;
+f_start = 2.4e9;
+f_stop = 2.5e9;
 BW = f_stop - f_start;
 Ts = 0.02;
 Trp = 0.250;
