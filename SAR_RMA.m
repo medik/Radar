@@ -4,7 +4,7 @@ clc;
 % Defining constants
 [y, fs] = audioread('SAR_Test_File.m4a');
 c = 299792458;
-fc = 2.43e9; % center frequency
+fc = 2.45e9; % center frequency
 f_start = 2.4e9;
 f_stop = 2.5e9;
 BW = f_stop - f_start;
