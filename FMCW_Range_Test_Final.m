@@ -29,6 +29,7 @@ time_vec=[];
 matrix=[];
 
 sync_start = [];
+matrix_down = [];
 
 n=1;
 while n <= length(sync)
@@ -50,8 +51,23 @@ while n <= length(sync)
                  n=n+1;
              end
          end
+    else
+         if n+N-1 <= length(sig)
+            temp = sig(n:n+N-1);
+        else
+            temp = [sig(n:end)];
+            temp = [temp zeros(1,N-length(temp))];
+        end
+        
+        matrix_down = [matrix_down; temp;];
+        n = n+N-1;
+        if n <= length(sig) && 1
+            while sync(n) < 0
+                n=n+1;
+             end
+        end
     end
-    n=n+1;
+    %n=n+1;
 end
 %%
 % MS Clutter rejection
