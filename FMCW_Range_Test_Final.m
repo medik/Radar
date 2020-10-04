@@ -62,7 +62,7 @@ while n <= length(sync)
         matrix_down = [matrix_down; temp;];
         n = n+N-1;
         if n <= length(sig) && 1
-            while sync(n) < 0
+            while sync(n) == 0
                 n=n+1;
              end
         end
