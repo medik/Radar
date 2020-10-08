@@ -46,13 +46,15 @@ while n <= length(sync)
         
         matrix = [matrix; temp;];
         n = n+N-1;
-         if n <= length(sig) && 1
+        if n <= length(sig) && 1
              while sync(n) > 0
                  n=n+1;
              end
-         end
-    else
-         if n+N-1 <= length(sig)
+        end
+        
+        n_temp = n;
+         
+        if n+N-1 <= length(sig)
             temp = sig(n:n+N-1);
         else
             temp = [sig(n:end)];
@@ -60,14 +62,9 @@ while n <= length(sync)
         end
         
         matrix_down = [matrix_down; temp;];
-        n = n+N-1;
-        if n <= length(sig) && 1
-            while sync(n) == 0
-                n=n+1;
-             end
-        end
+        n = n_temp;
     end
-    %n=n+1;
+    n=n+1;
 end
 %%
 % MS Clutter rejection
