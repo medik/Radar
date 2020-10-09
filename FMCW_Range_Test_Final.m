@@ -241,7 +241,9 @@ grid MINOR
 figure(6)
 del_x = diff(target_range');
 del_t = diff(time_vec);
+
 vel = -1*movmean(del_x./del_t, 70);
+
 plot(time_vec(1:end), [0 vel])
 title('Velocity vs time using two point finite difference method')
 xlabel('Time [s]')
