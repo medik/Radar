@@ -29,6 +29,7 @@ time_vec=[];
 matrix=[];
 
 sync_start = [];
+matrix_down = [];
 
 n=1;
 while n <= length(sync)
@@ -45,14 +46,27 @@ while n <= length(sync)
         
         matrix = [matrix; temp;];
         n = n+N-1;
-         if n <= length(sig) && 1
+        if n <= length(sig) && 1
              while sync(n) > 0
                  n=n+1;
              end
-         end
+        end
+        
+        n_temp = n;
+         
+        if n+N-1 <= length(sig)
+            temp = sig(n:n+N-1);
+        else
+            temp = [sig(n:end)];
+            temp = [temp zeros(1,N-length(temp))];
+        end
+        
+        matrix_down = [matrix_down; temp;];
+        n = n_temp;
     end
     n=n+1;
 end
+
 %%
 % MS Clutter rejection
 clutter_rej=1;
@@ -73,6 +87,27 @@ for i = [1:b]
     temp_mx = [temp_mx; ifft(row,4*N)];
 end
 matrix = temp_mx;
+
+%%
+% MS Clutter rejection
+clutter_rej=1;
+if clutter_rej
+    [mx_N, mx_M] = size(matrix_down);
+
+    for i=[1:mx_M]
+        col=matrix_down(:,i);
+        col_mean = mean(col);
+        matrix_down(:,i)=col-col_mean;
+    end
+end
+
+temp_mx = [];
+[b,d] = size(matrix_down);
+for i = [1:b]
+    row = matrix_down(i,:);
+    temp_mx = [temp_mx; ifft(row,4*N)];
+end
+matrix_down = temp_mx;
 
 % 
 % %2-pulse MTI
@@ -99,16 +134,63 @@ while k <= P
 end
 matrix = temp_MTI;
 
+% 
+% %2-pulse MTI
+% k = 2;
+% [P,~] = size(matrix);
+% temp_MTI = [];
+% while k <= P
+%     temp = matrix(k,:) - matrix(k-1,:);
+%     temp_MTI = [temp_MTI; temp];
+%     k = k + 1;
+% end
+% matrix = temp_MTI;
+
+%3-pulse MTI
+k = 3;
+[P,~] = size(matrix_down);
+temp_MTI = [];
+temp_MTI(1,:) = matrix_down(1,:);
+temp_MTI(2,:) = matrix_down(2,:);
+while k <= P
+    temp = matrix_down(k,:) - 2*matrix_down(k-1,:) + matrix_down(k-2,:);
+    temp_MTI = [temp_MTI; temp];
+    k = k + 1;
+end
+matrix_down = temp_MTI;
+
+c=299792458;
+
+%% Finding beat frequency for each up and down chirp
+
+[P,~] = size(matrix);
+vel_vec=[];
+for i=[1:P]
+    [~, i_up] = max(matrix(i,1:100));
+    [~, i_down] = max(matrix_down(i,1:100));
+    
+    % highest frequency is N*fs/2
+    freq_up = i_up*(fs/(2*4*N));
+    freq_down = i_down*(fs/(2*4*N));
+    delta_f = (freq_up-freq_down)/2;
+
+    vel_vec = [vel_vec delta_f*c/( (2.45e9) )];
+    %vel_vec = [vel_vec delta_f]
+end
+
+
 % FFT and normalize
 matrix_fft = abs(matrix);
 matrix_max_db = mag2db(max(max(matrix_fft)));
 matrix_fft_db = mag2db(matrix_fft)-matrix_max_db;
 
+
+
 %%
 figure(3)
 f_max = fs/2;
 deltaf = 2.495e9-2.408e9;
-c=299792458;
+
 deltaR = c/(2*deltaf);
 Rmax = 4*N*deltaR/2;
 M=100;
@@ -159,7 +241,9 @@ grid MINOR
 figure(6)
 del_x = diff(target_range');
 del_t = diff(time_vec);
-vel = movmean(del_x./del_t, 100);
+
+vel = -1*movmean(del_x./del_t, 70);
+
 plot(time_vec(1:end), [0 vel])
 title('Velocity vs time using two point finite difference method')
 xlabel('Time [s]')

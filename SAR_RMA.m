@@ -2,9 +2,9 @@ clear all;
 clc;
 
 % Defining constants
-[y, fs] = audioread('SAR_Test_File.m4a');
+[y, fs] = audioread('SAR_Malvinas_väg_mot_betongblocken_15_sek_vers_2.wav');
 c = 299792458;
-fc = 2.45e9; % center frequency
+fc = 2.5e9; % center frequency
 f_start = 2.4e9;
 f_stop = 2.5e9;
 BW = f_stop - f_start;
@@ -14,10 +14,24 @@ Ns = fs*Ts;
 Nrp = fs*Trp;
 
 % Labeling data
+%figure(20)
 data = -y(:,1);
+%plot(data)
+
+%figure(21)
 trig = -y(:,2);
+%plot(trig)
+%
+
+
+%
 
 % Identify range profile acquisition and parse data and sync signal
+
+figure(4)
+clf
+hold on
+
 rp_start = abs(trig) > mean(abs(trig));
 count = 0;
 RP = [];
@@ -26,10 +40,20 @@ for i = Nrp+1:(size(rp_start,1) - Nrp)
     if rp_start(i) == 1 && sum(rp_start(i-Nrp:i-1)) == 0
         count = count + 1;
         RP(count,:) = data(i:i+Nrp-1);
+        plot([i:i+Nrp-1], data(i:i+Nrp-1), 'r');
+        
         RP_trig(count,:) = trig(i:i+Nrp-1);
+        plot([i:i+Nrp-1], trig(i:i+Nrp-1), 'b');
+
     end
 end
 
+legend('Parsed data','Sync')
+hold off
+title('Captured parsed data')
+xlabel('Samples')
+ylabel('Signal magnitude')
+%%
 % Parse data according to rising edge trigger
 thresh = 0.08;
 for j = 1:size(RP,1)
